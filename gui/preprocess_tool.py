@@ -800,7 +800,7 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
 
         self.set_show_option('aligned')
 
-        with open(os.path.join(thumbnail_data_dir, '/%(stack)s/%(stack)s_cropbox.txt' % {'stack': self.stack}, 'r')) as f:
+        with open(os.path.join(thumbnail_data_dir, '%(stack)s/%(stack)s_cropbox.txt' % {'stack': self.stack}), 'r') as f:
             ul_x, lr_x, ul_y, lr_y, self.first_section, self.last_section = map(int, f.readline().split())
             self.sorted_sections_gscene.set_box(ul_x, lr_x, ul_y, lr_y)
             print ul_x, lr_x, ul_y, lr_y, self.first_section, self.last_section
@@ -1435,9 +1435,9 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': remote_thumbnail_data_dir,
                         'local_data_dir': thumbnail_data_dir,
-                        'identity_file' : identity_file,
-                        'remote_host' : remote_host,
-                        'remote_data_store' : remote_data_store,
+                        'identity_file' : self.identity_file,
+                        'remote_host' : self.remote_host,
+                        'remote_data_store' : self.remote_data_store,
                         'stack': self.stack})
 
     def warp_crop_masks(self):
@@ -1455,18 +1455,18 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': remote_thumbnail_data_dir,
                         'local_data_dir': thumbnail_data_dir,
-                        'identity_file' : identity_file,
-                        'remote_host' : remote_host,
-                        'remote_data_store' : remote_data_store,
+                        'identity_file' : self.identity_file,
+                        'remote_host' : self.remote_host,
+                        'remote_data_store' : self.remote_data_store,
                         'anchor_fn': self.anchor_fn,
                         'stack': self.stack})
 
         execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s_cropped && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s_cropped %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': remote_thumbnail_data_dir,
                         'local_data_dir': thumbnail_data_dir,
-                        'identity_file' : identity_file,
-                        'remote_host' : remote_host,
-                        'remote_data_store' : remote_data_store,
+                        'identity_file' : self.identity_file,
+                        'remote_host' : self.remote_host,
+                        'remote_data_store' : self.remote_data_store,
                         'anchor_fn': self.anchor_fn,
                         'stack': self.stack})
 
@@ -1494,7 +1494,7 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
 
     def compose(self):
 
-        with open(os.path.join(thumbnail_data_dir, '%(stack)s/%(stack)s_anchor.txt' % {'stack': self.stack}, 'w')) as f:
+        with open(os.path.join(thumbnail_data_dir, '%(stack)s/%(stack)s_anchor.txt' % {'stack': self.stack}), 'w') as f:
             f.write(self.anchor_fn)
 
         self.statusBar().showMessage('Conmpose consecutive alignments...')

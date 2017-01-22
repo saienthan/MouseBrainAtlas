@@ -89,7 +89,7 @@ elif hostname.startswith('ip'):
     RAW_DATA_DIR = '/shared/data/CSHL_data'
     data_dir = '/shared/data/CSHL_data_processed'
     DATA_DIR = '/shared/data/CSHL_data_processed'
-    thumbnail_data_dir = data_dir
+    thumbnail_data_dir = '/home/saienthan/CSHL_data_processed'
     atlasAlignParams_rootdir = '/shared/data/CSHL_atlasAlignParams_atlas_v2'
     atlasAlignOptLogs_dir = '/shared/data/CSHL_atlasAlignOptLogs_atlas_v2'
     VOLUME_ROOTDIR = '/shared/data/CSHL_volumes2'
