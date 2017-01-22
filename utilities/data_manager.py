@@ -27,10 +27,6 @@ def generate_suffix(train_sample_scheme=None, global_transform_scheme=None, loca
 
     return '_'.join(suffix)
 
-def save_file_to_s3(local_path, s3_path):
-    # upload to s3
-    return
-
 def save_to_s3(fpkw, fppos):
     """
     Decorator. Must provide both `fpkw` and `fppos` because we don't know if
@@ -1471,6 +1467,7 @@ class DataManager(object):
 
 # This module stores any meta information that is dynamic.
 metadata_cache = {}
+all_stacks = ['MD589']
 # metadata_cache['image_shape'] = {stack: DataManager.get_image_dimension(stack) for stack in all_stacks}
 metadata_cache['image_shape'] =\
 {'MD585': (16384, 12000),

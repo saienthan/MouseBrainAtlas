@@ -115,7 +115,8 @@ elif hostname.startswith('ip'):
 elif hostname.endswith('GL502VM'):
     print 'Setting environment for Local Machine Saienthan'
     ON_AWS = True
-    IDENTITY_FILE = ' -i "/home/saienthan/Downloads/KeyCompute.pem" '
+    s3_home = 'ucsd-mousebrainatlas-home'
+    IDENTITY_FILE = ' -i \"/home/saienthan/Downloads/KeyCompute.pem\" '
     REMOTE_DATA_STORE = 'ubuntu@ec2-52-8-75-87.us-west-1.compute.amazonaws.com'
     REMOTE_HOST = 'ubuntu@ec2-52-8-75-87.us-west-1.compute.amazonaws.com'
     os.environ["REPO_DIR"] = '/home/saienthan/MouseBrainAtlas/'

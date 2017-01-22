@@ -843,14 +843,16 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         # Download unsorted thumbnail cropped images
         self.statusBar().showMessage('Downloading aligned cropped thumbnail images ...')
 
-        execute_command(('ssh %(remote_host) \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped/*.tif\" && '
-                        'scp oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz %(local_data_dir)s/ &&'
-                        'ssh %(remote_host) rm %(remote_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz &&'
+        execute_command(('ssh %(identity_file)s %(remote_host)s \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped/*.tif\" && '
+                        'scp %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz %(local_data_dir)s/ &&'
+                        'ssh %(identity_file)s %(remote_host)s rm %(remote_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz &&'
                         'cd %(local_data_dir)s && rm -rf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped && tar -xf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz && rm %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped.tar.gz' ) % \
                         dict(remote_data_dir=self.stack_data_dir_remote,
                             local_data_dir=self.stack_data_dir,
-                            stack=self.stack,
+                            identity_file=self.identity_file,
+                            remote_data_store=self.remote_data_store,
                             remote_host=self.remote_host,
+                            stack=self.stack,
                             anchor_fn=self.anchor_fn))
 
     def edit_transform(self):
@@ -953,13 +955,15 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
             y='+0',
             raw_data_dir=RAW_DATA_DIR))
 
-        execute_command(('ssh %(remote_host) mkdir %(stack_data_dir_remote)s/%(stack)s_custom_transforms; '
-                        'scp -r %(stack_data_dir)s/%(stack)s_custom_transforms/%(curr_fn)s_to_%(prev_fn)s oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_custom_transforms/') %\
+        execute_command(('ssh %(identity_file)s %(remote_host)s mkdir %(stack_data_dir_remote)s/%(stack)s_custom_transforms; '
+                        'scp -r %(stack_data_dir)s/%(stack)s_custom_transforms/%(curr_fn)s_to_%(prev_fn)s %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_custom_transforms/') %\
                         dict(stack_data_dir=self.stack_data_dir,
                             stack_data_dir_remote=self.stack_data_dir_remote,
                             stack=self.stack,
-                            curr_fn=curr_section_fn,
+                            identity_file=self.identity_file,
+                            remote_data_store=self.remote_data_store,
                             remote_host=self.remote_host,
+                            curr_fn=curr_section_fn,
                             prev_fn=prev_section_fn))
 
 
@@ -1132,10 +1136,10 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
 
     def send_info_gordon(self):
         # Upload cropbox file, sorted filenames file, anchor file
-        execute_command(('scp %(stack_data_dir)s/%(stack)s_cropbox.txt oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/ &&'
-                        'scp %(stack_data_dir)s/%(stack)s_anchor.txt oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/ &&'
-                        'scp %(stack_data_dir)s/%(stack)s_sorted_filenames.txt oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/') %\
-                        dict(stack=self.stack, stack_data_dir=self.stack_data_dir, stack_data_dir_remote=self.stack_data_dir_remote))
+        execute_command(('scp %(identity_file)s %(stack_data_dir)s/%(stack)s_cropbox.txt %(remote_data_store)s:%(stack_data_dir_remote)s/ &&'
+                        'scp %(identity_file)s %(stack_data_dir)s/%(stack)s_anchor.txt %(remote_data_store)s:%(stack_data_dir_remote)s/ &&'
+                        'scp %(identity_file)s %(stack_data_dir)s/%(stack)s_sorted_filenames.txt %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/') %\
+                        dict(stack=self.stack, stack_data_dir=self.stack_data_dir, identity_file=self.identity_file, stack_data_dir_remote=self.stack_data_dir_remote))
 
 
     # def send_info_workstation(self):
@@ -1162,7 +1166,7 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         commands_on_brainstem_download_sorted_saturation = \
         ('cd %(workstation_data_dir)s && mkdir %(stack)s; cd %(stack)s &&'
         'rm -rf %(stack)s_lossless_sorted_aligned_cropped_saturation &&'
-        'scp -r oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_saturation.tar . &&'
+        'scp -r %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_saturation.tar . &&'
         'tar -xf %(stack)s_lossless_sorted_aligned_cropped_saturation.tar') \
         % dict(stack=self.stack,
                 workstation_data_dir='/media/yuncong/BstemAtlasData/CSHL_data_processed/',
@@ -1186,7 +1190,7 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         commands_on_brainstem_download_sorted_compressed = \
         ('cd %(workstation_data_dir)s && mkdir %(stack)s; cd %(stack)s &&'
         'rm -rf %(stack)s_lossless_sorted_aligned_cropped_compressed &&'
-        'scp -r oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_compressed.tar . &&'
+        'scp -r %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_compressed.tar . &&'
         'tar -xf %(stack)s_lossless_sorted_aligned_cropped_compressed.tar') \
         % dict(stack=self.stack,
                 workstation_data_dir='/media/yuncong/BstemAtlasData/CSHL_data_processed/',
@@ -1210,7 +1214,7 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         commands_on_brainstem_download_sorted_masks = \
         ('cd %(workstation_data_dir)s && mkdir %(stack)s; cd %(stack)s &&'
         'rm -rf %(stack)s_mask_sorted_aligned_cropped &&'
-        'scp -r oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_mask_sorted_aligned_cropped.tar . &&'
+        'scp -r %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_mask_sorted_aligned_cropped.tar . &&'
         'tar -xf %(stack)s_mask_sorted_aligned_cropped.tar') \
         % dict(stack=self.stack,
                 workstation_data_dir='/media/yuncong/BstemAtlasData/CSHL_data_processed/',
@@ -1245,39 +1249,37 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
                         stack=self.stack, sorted_filenames=self.sorted_filenames, anchor_fn=self.anchor_fn)
 
         # Download sorted data folder symbolic links
-        download_sorted_thumbnails_symlinks_cmd = ('ssh oasis-dm.sdsc.edu \"cd %(stack_data_dir_remote)s && tar -cf %(stack)s_thumbnail_sorted_aligned.tar %(stack)s_thumbnail_sorted_aligned\" && '
+        download_sorted_thumbnails_symlinks_cmd = ('ssh %(identity_file)s %(remote_data_store)s \"cd %(stack_data_dir_remote)s && tar -cf %(stack)s_thumbnail_sorted_aligned.tar %(stack)s_thumbnail_sorted_aligned\" && '
                 'cd %(thumbnail_data_dir)s && mkdir %(stack)s ; cd %(stack)s &&'
-                'scp -r oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned.tar . &&'
+                'scp -r %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned.tar . &&'
                 'rm -rf %(stack)s_thumbnail_sorted_aligned && tar -xf %(stack)s_thumbnail_sorted_aligned.tar &&'
                 'rm -r %(stack)s_thumbnail_sorted_aligned.tar') %\
-                dict(stack=self.stack, stack_data_dir=self.stack_data_dir, stack_data_dir_remote=self.stack_data_dir_remote,
-                thumbnail_data_dir=thumbnail_data_dir)
-                # 'ssh oasis-dm.sdsc.edu rm %(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned.tar') % \
+                dict(stack=self.stack, stack_data_dir=self.stack_data_dir, stack_data_dir_remote=self.stack_data_dir_remote, identity_file=self.identity_file, remote_data_store=self.remote_data_store, remote_host=self.remote_host, thumbnail_data_dir=thumbnail_data_dir)
+                # 'ssh %(identity_file)s %(remote_data_store)s rm %(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned.tar') % \
 
         execute_command(download_sorted_thumbnails_symlinks_cmd)
 
         self.statusBar().showMessage('Aligned cropped thumbnail images downloaded.')
 
         # Download sorted thumbnail cropped data folder symbolic links
-        download_sorted_thumbnails_symlinks_cmd = ('ssh oasis-dm.sdsc.edu \"cd %(stack_data_dir_remote)s && tar -cf %(stack)s_thumbnail_sorted_aligned_cropped.tar %(stack)s_thumbnail_sorted_aligned_cropped\" && '
+        download_sorted_thumbnails_symlinks_cmd = ('ssh %(identity_file)s %(remote_data_store)s \"cd %(stack_data_dir_remote)s && tar -cf %(stack)s_thumbnail_sorted_aligned_cropped.tar %(stack)s_thumbnail_sorted_aligned_cropped\" && '
                 'cd %(thumbnail_data_dir)s && mkdir %(stack)s ; cd %(stack)s &&'
-                'scp -r oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned_cropped.tar . &&'
+                'scp -r %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned_cropped.tar . &&'
                 'rm -rf %(stack)s_thumbnail_sorted_aligned_cropped && tar -xf %(stack)s_thumbnail_sorted_aligned_cropped.tar &&'
                 'rm -r %(stack)s_thumbnail_sorted_aligned_cropped.tar') %\
-                dict(stack=self.stack, stack_data_dir=self.stack_data_dir, stack_data_dir_remote=self.stack_data_dir_remote,
-                thumbnail_data_dir=thumbnail_data_dir)
-                # 'ssh oasis-dm.sdsc.edu rm %(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned_cropped.tar') % \
+                dict(stack=self.stack, stack_data_dir=self.stack_data_dir, stack_data_dir_remote=self.stack_data_dir_remote, identity_file=self.identity_file, remote_data_store=self.remote_data_store, remote_host=self.remote_host, thumbnail_data_dir=thumbnail_data_dir)
+                # 'ssh %(identity_file)s %(remote_data_store)s rm %(stack_data_dir_remote)s/%(stack)s_thumbnail_sorted_aligned_cropped.tar') % \
 
         execute_command(download_sorted_thumbnails_symlinks_cmd)
 
         # Download sorted lossless aligned cropped compressed data folder symbolic links
-        execute_command(('ssh oasis-dm.sdsc.edu \"cd %(stack_data_dir_remote)s && tar -cf %(stack)s_lossless_sorted_aligned_cropped_compressed.tar %(stack)s_lossless_sorted_aligned_cropped_compressed\" && '
+        execute_command(('ssh %(identity_file)s %(remote_data_store)s \"cd %(stack_data_dir_remote)s && tar -cf %(stack)s_lossless_sorted_aligned_cropped_compressed.tar %(stack)s_lossless_sorted_aligned_cropped_compressed\" && '
                         'cd %(data_dir)s && mkdir %(stack)s ; cd %(stack)s &&'
-                        'scp -r oasis-dm.sdsc.edu:%(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_compressed.tar . &&'
+                        'scp -r %(identity_file)s %(remote_data_store)s:%(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_compressed.tar . &&'
                         'rm -rf %(stack)s_lossless_sorted_aligned_cropped_compressed && tar -xf %(stack)s_lossless_sorted_aligned_cropped_compressed.tar &&'
                         'rm -r %(stack)s_lossless_sorted_aligned_cropped_compressed.tar') %\
-                        dict(stack=self.stack, data_dir=data_dir, stack_data_dir_remote=self.stack_data_dir_remote))
-				# 'ssh oasis-dm.sdsc.edu rm %(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_compressed.tar') % \
+                        dict(stack=self.stack, data_dir=data_dir, identity_file=self.identity_file, remote_data_store=self.remote_data_store, stack_data_dir_remote=self.stack_data_dir_remote))
+				# 'ssh %(identity_file)s %(remote_data_store)s rm %(stack_data_dir_remote)s/%(stack)s_lossless_sorted_aligned_cropped_compressed.tar') % \
 
         # Download unsorted lossless aligned cropped data MANUALLY !!
 
@@ -1403,18 +1405,18 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
 
     def download(self):
 
-        execute_command("""mkdir %(local_data_dir)s/%(stack)s; scp oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s/*.%(tb_fmt)s %(local_data_dir)s/%(stack)s/""" % \
+        execute_command("""mkdir %(local_data_dir)s/%(stack)s; scp %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/*.%(tb_fmt)s %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': REMOTE_RAW_DATA_DIR,
                         'local_data_dir': RAW_DATA_DIR,
                         'stack': self.stack,
                         'tb_fmt': self.tb_fmt})
 
-        execute_command("""scp -r oasis-dm.sdsc.edu:%(remote_data_dir)s/macros_annotated/%(stack)s/ %(local_data_dir)s/macros_annotated/""" % \
+        execute_command("""scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/macros_annotated/%(stack)s/ %(local_data_dir)s/macros_annotated/""" % \
                         {'remote_data_dir': REMOTE_RAW_DATA_DIR,
                         'local_data_dir': RAW_DATA_DIR,
                         'stack': self.stack})
 
-        execute_command("""scp -r oasis-dm.sdsc.edu:%(remote_data_dir)s/macros/%(stack)s/ %(local_data_dir)s/macros/""" % \
+        execute_command("""scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/macros/%(stack)s/ %(local_data_dir)s/macros/""" % \
                         {'remote_data_dir': REMOTE_RAW_DATA_DIR,
                         'local_data_dir': RAW_DATA_DIR,
                         'stack': self.stack})
@@ -1425,14 +1427,17 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
                                     stack=self.stack, filenames=self.get_valid_sorted_filenames(),
                                     tb_fmt=self.tb_fmt)
 
-        # execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted && scp -r oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted %(local_data_dir)s/%(stack)s/""" % \
+        # execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted %(local_data_dir)s/%(stack)s/""" % \
         #                 {'remote_data_dir': '/home/yuncong/CSHL_data_processed',
         #                 'local_data_dir': '/home/yuncong/CSHL_data_processed',
         #                 'stack': self.stack})
 
-        execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted && scp -r oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted %(local_data_dir)s/%(stack)s/""" % \
+        execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': remote_thumbnail_data_dir,
                         'local_data_dir': thumbnail_data_dir,
+                        'identity_file' : identity_file,
+                        'remote_host' : remote_host,
+                        'remote_data_store' : remote_data_store,
                         'stack': self.stack})
 
     def warp_crop_masks(self):
@@ -1447,31 +1452,38 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
                                             stack=self.stack, filenames=self.get_valid_sorted_filenames(),
                                             x=ul_x, y=ul_y, w=lr_x+1-ul_x, h=lr_y+1-ul_y, anchor_fn=self.anchor_fn)
 
-        execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s && scp -r oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s %(local_data_dir)s/%(stack)s/""" % \
+        execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': remote_thumbnail_data_dir,
                         'local_data_dir': thumbnail_data_dir,
+                        'identity_file' : identity_file,
+                        'remote_host' : remote_host,
+                        'remote_data_store' : remote_data_store,
                         'anchor_fn': self.anchor_fn,
                         'stack': self.stack})
 
-        execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s_cropped && scp -r oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s_cropped %(local_data_dir)s/%(stack)s/""" % \
+        execute_command("""rm -rf %(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s_cropped && scp -r %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s/%(stack)s_mask_unsorted_alignedTo_%(anchor_fn)s_cropped %(local_data_dir)s/%(stack)s/""" % \
                         {'remote_data_dir': remote_thumbnail_data_dir,
                         'local_data_dir': thumbnail_data_dir,
+                        'identity_file' : identity_file,
+                        'remote_host' : remote_host,
+                        'remote_data_store' : remote_data_store,
                         'anchor_fn': self.anchor_fn,
                         'stack': self.stack})
 
 
     def align(self):
         self.web_service.convert_to_request('align', stack=self.stack, filenames=self.get_valid_sorted_filenames())
+        dc = dict(remote_data_dir=self.stack_data_dir_remote, identity_file=self.identity_file, remote_host=self.remote_host, remote_data_store=self.remote_data_store, local_data_dir=self.stack_data_dir, stack=self.stack)
 
         ## SSH speed is not stable. Performance is alternating: one 5MB/s, the next 800k/s, the next 5MB/s again.
-        execute_command(('ssh %(identity_file) %(remote_host) \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_elastix_output.tar.gz %(stack)s_elastix_output/*/*.tif\" &&'
-                        'scp %(identity_file) %(remote_data_store):%(remote_data_dir)s/%(stack)s_elastix_output.tar.gz %(local_data_dir)s/ &&'
+        execute_command(('ssh %(identity_file)s %(remote_host)s \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_elastix_output.tar.gz %(stack)s_elastix_output/*/*.tif\" &&'
+                        'scp %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s_elastix_output.tar.gz %(local_data_dir)s/ &&'
                         'cd %(local_data_dir)s && rm -rf %(stack)s_elastix_output && tar -xf %(stack)s_elastix_output.tar.gz && rm %(stack)s_elastix_output.tar.gz &&'
-                        'ssh %(identiy_file) %(remote_host) rm %(remote_data_dir)s/%(stack)s_elastix_output.tar.gz') % \
+                        'ssh %(identity_file)s %(remote_host)s rm %(remote_data_dir)s/%(stack)s_elastix_output.tar.gz') % \
                         dict(remote_data_dir=self.stack_data_dir_remote,
                             identity_file=self.identity_file,
-                            remote_data_store=self.remote_data_store,
                             remote_host=self.remote_host,
+                            remote_data_store=self.remote_data_store,
                             local_data_dir=self.stack_data_dir,
                             stack=self.stack))
 
@@ -1495,14 +1507,17 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
 
         self.statusBar().showMessage('Downloading aligned images ...')
 
-        execute_command(('ssh %(remote_host) \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s.tar.gz %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s/*.tif\" && '
-                        'scp oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s.tar.gz %(local_data_dir)s/ &&'
+        execute_command(('ssh %(identity_file)s %(remote_host)s \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s.tar.gz %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s/*.tif\" && '
+                        'scp %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s.tar.gz %(local_data_dir)s/ &&'
                         'cd %(local_data_dir)s && rm -rf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s && tar -xf %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s.tar.gz && rm %(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s.tar.gz && '
-                        'scp oasis-dm.sdsc.edu:%(remote_data_dir)s/%(stack)s_elastix_output/%(stack)s_transformsTo_%(anchor_fn)s.pkl %(stack)s_elastix_output/ && '
+                        'scp %(identity_file)s %(remote_data_store)s:%(remote_data_dir)s/%(stack)s_elastix_output/%(stack)s_transformsTo_%(anchor_fn)s.pkl %(stack)s_elastix_output/ && '
                         'cd %(stack)s_elastix_output && rm -f %(stack)s_transformsTo_anchor.pkl && ln -s %(stack)s_transformsTo_%(anchor_fn)s.pkl %(stack)s_transformsTo_anchor.pkl ') % \
                         dict(remote_data_dir=self.stack_data_dir_remote,
                             local_data_dir=self.stack_data_dir,
                             stack=self.stack,
+                            identity_file=self.identity_file,
+                            remote_data_store=self.remote_data_store,
+                            remote_host=self.remote_host,
                             anchor_fn=self.anchor_fn))
 
         self.statusBar().showMessage('Aligned images downloaded.')
