@@ -49,7 +49,7 @@ def align():
     filenames = map(str, request.args.getlist('filenames'))
 
 
-    run_distributed4("%(script_dir)s/align_consecutive_v2.py %(stack)s %(input_dir)s %(elastix_output_dir)s \'%%(kwargs_str)s\'" % \
+    run_distributed5("%(script_dir)s/align_consecutive_v2.py %(stack)s %(input_dir)s %(elastix_output_dir)s \'%%(kwargs_str)s\'" % \
                     {'stack': stack,
                     'script_dir': script_dir,
                     'input_dir': os.path.join(RAW_DATA_DIR, stack),
@@ -86,7 +86,7 @@ def compose():
     # output_fn = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_%(anchor_fn)s.pkl' % \
     #                                                 dict(stack=stack, anchor_fn=anchor_fn))
     #
-    # run_distributed4("%(script_dir)s/compose_transform_thumbnail_v2.py %(stack)s %(elastix_output_dir)s \'%%(kwargs_str)s\' %(anchor_idx)d %(output_fn)s" % \
+    # run_distributed5("%(script_dir)s/compose_transform_thumbnail_v2.py %(stack)s %(elastix_output_dir)s \'%%(kwargs_str)s\' %(anchor_idx)d %(output_fn)s" % \
     #             {'stack': stack,
     #             'script_dir': script_dir,
     #             'elastix_output_dir': os.path.join(data_dir, stack, stack+'_elastix_output'),
@@ -116,7 +116,7 @@ def compose():
     														dict(stack=stack, anchor_fn=anchor_fn))
     transforms_to_anchor = pickle.load(open(transforms_filename, 'r'))
 
-    run_distributed4('%(script_dir)s/warp_crop_IM_v2.py %(stack)s %(input_dir)s %(aligned_dir)s %%(transform)s %%(filename)s %%(output_fn)s thumbnail 0 0 2000 1500 %(pad_bg_color)s' % \
+    run_distributed5('%(script_dir)s/warp_crop_IM_v2.py %(stack)s %(input_dir)s %(aligned_dir)s %%(transform)s %%(filename)s %%(output_fn)s thumbnail 0 0 2000 1500 %(pad_bg_color)s' % \
                     {'script_dir': script_dir,
                     'stack': stack,
                     'input_dir': RAW_DATA_DIR + stack,
@@ -179,7 +179,7 @@ def crop():
     # filenames_to_expand = [fn for fn in filenames[first_idx:last_idx+1] if not os.path.exists(expanded_tif_dir + '/' + fn + '_lossless.tif')]
     # sys.stderr.write('filenames_to_expand: %s' % filenames_to_expand)
     #
-    # run_distributed4('kdu_expand_patched -i %(jp2_dir)s/%%(fn)s_lossless.jp2 -o %(expanded_tif_dir)s/%%(fn)s_lossless.tif' % \
+    # run_distributed5('kdu_expand_patched -i %(jp2_dir)s/%%(fn)s_lossless.jp2 -o %(expanded_tif_dir)s/%%(fn)s_lossless.tif' % \
     #                 {'jp2_dir': '/home/yuncong/CSHL_data/' + stack,
     #                 # 'stack': stack,
     #                 'expanded_tif_dir': expanded_tif_dir},
@@ -200,7 +200,7 @@ def crop():
     #
     # # print transforms_to_anchor.keys()
     #
-    # run_distributed4(command='%(script_path)s %(stack)s %(lossless_tif_dir)s %(lossless_aligned_cropped_dir)s %%(transform)s %%(filename)s %%(output_fn)s lossless %(x)d %(y)d %(w)d %(h)d %(pad_bg_color)s'%\
+    # run_distributed5(command='%(script_path)s %(stack)s %(lossless_tif_dir)s %(lossless_aligned_cropped_dir)s %%(transform)s %%(filename)s %%(output_fn)s lossless %(x)d %(y)d %(w)d %(h)d %(pad_bg_color)s'%\
     #                 {'script_path': script_dir + '/warp_crop_IM_v2.py',
     #                 'stack': stack,
     #                 'lossless_tif_dir': os.path.join(os.environ['DATA_DIR'] , stack, stack + '_lossless_tif'),
@@ -229,7 +229,7 @@ def crop():
         input_dir = os.path.join( os.environ['DATA_DIR'], stack, stack + '_lossless_unsorted_alignedTo_' + anchor_fn + '_cropped')
         output_dir = create_if_not_exists(os.path.join(DATA_DIR, '%(stack)s/%(stack)s_lossless_unsorted_alignedTo_%(anchor_fn)s_cropped_blueAsGrayscale' % dict(stack=stack, anchor_fn=anchor_fn)))
 
-        run_distributed4(command='%(script_path)s %(input_dir)s %(output_dir)s %%(filename)s' % \
+        run_distributed5(command='%(script_path)s %(input_dir)s %(output_dir)s %%(filename)s' % \
                         {'script_path': os.path.join(os.environ['REPO_DIR'], 'preprocess') + '/neurotrace_blue_to_nissl.py',
                         'input_dir': input_dir,
                         'output_dir': output_dir},
@@ -245,7 +245,7 @@ def crop():
     print 'Generating compressed version and/or saturation as grayscale...',
 
     if stack in ['MD635']:
-        run_distributed4('%(script_dir)s/generate_other_versions_v2.py %(stack)s %(input_dir)s \'%%(input_filenames)s\' --output_compressed_dir %(compressed_dir)s' % \
+        run_distributed5('%(script_dir)s/generate_other_versions_v2.py %(stack)s %(input_dir)s \'%%(input_filenames)s\' --output_compressed_dir %(compressed_dir)s' % \
                         dict(script_dir=script_dir,
                         stack=stack,
                         input_dir=os.path.join(data_dir, stack, stack + '_lossless_unsorted_alignedTo_' + anchor_fn + '_cropped_blueAsGrayscale'),
@@ -254,7 +254,7 @@ def crop():
                         exclude_nodes=exclude_nodes + [32],
                         argument_type='list2')
     else:
-        run_distributed4('%(script_dir)s/generate_other_versions_v2.py %(stack)s %(input_dir)s \'%%(input_filenames)s\' --output_compressed_dir %(compressed_dir)s --output_saturation_dir %(saturation_dir)s' % \
+        run_distributed5('%(script_dir)s/generate_other_versions_v2.py %(stack)s %(input_dir)s \'%%(input_filenames)s\' --output_compressed_dir %(compressed_dir)s --output_saturation_dir %(saturation_dir)s' % \
                         dict(script_dir=script_dir,
                         stack=stack,
                         input_dir=os.path.join(data_dir, stack, stack + '_lossless_unsorted_alignedTo_' + anchor_fn + '_cropped'),
@@ -442,7 +442,7 @@ def generate_masks():
     #     input_dir = '/home/yuncong/CSHL_data/%(stack)s' % dict(stack=stack)
     #     output_dir = create_if_not_exists('/home/yuncong/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack))
     #
-    #     run_distributed4(command='%(script_path)s %(input_dir)s %(output_dir)s %%(filename)s' % \
+    #     run_distributed5(command='%(script_path)s %(input_dir)s %(output_dir)s %%(filename)s' % \
     #                     {'script_path': os.path.join(os.environ['REPO_DIR'], 'preprocess') + '/neurotrace_blue_to_nissl.py',
     #                     'input_dir': input_dir,
     #                     'output_dir': output_dir},
@@ -472,7 +472,7 @@ def generate_masks():
     #     script_name = 'generate_thumbnail_masks_v2.py'
     #
     # # !! For some reason (perhaps too much simultaneous write to disk), the distributed computation cannot finish, usually stuck with only a few sections left.
-    # run_distributed4(command='%(script_path)s %(stack)s %(input_dir)s \'%%(filenames)s\' %(output_dir)s' % \
+    # run_distributed5(command='%(script_path)s %(stack)s %(input_dir)s \'%%(filenames)s\' %(output_dir)s' % \
     #                 {'script_path': os.path.join(os.environ['REPO_DIR'], 'preprocess') + '/' + script_name,
     #                 'stack': stack,
     #                 'input_dir': input_dir,
@@ -494,7 +494,7 @@ def generate_masks():
     mask_dir = '%(data_dir)s/%(stack)s/%(stack)s_mask_unsorted' % dict(stack=stack, data_dir=DATA_DIR)
     output_dir = create_if_not_exists('%(data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted' % dict(stack=stack, data_dir=DATA_DIR))
 
-    run_distributed4(command='%(script_path)s %(stack)s %(image_dir)s %(mask_dir)s \'%%(filenames)s\' %(output_dir)s --tb_fmt %(tb_fmt)s' % \
+    run_distributed5(command='%(script_path)s %(stack)s %(image_dir)s %(mask_dir)s \'%%(filenames)s\' %(output_dir)s --tb_fmt %(tb_fmt)s' % \
                     {'script_path': os.path.join(os.environ['REPO_DIR'], 'preprocess') + '/generate_thumbnail_mask_contour_viz.py',
                     'stack': stack,
                     'image_dir': image_dir,
@@ -533,7 +533,7 @@ def warp_crop_masks():
     #
     # execute_command('rm -rf %(aligned_dir)s' % dict(aligned_dir=os.path.join(data_dir, stack, stack + '_mask_unsorted_alignedTo_' + anchor_fn)))
     #
-    # run_distributed4('%(script_dir)s/warp_crop_IM_v2.py %(stack)s %(input_dir)s %(aligned_dir)s %%(transform)s %%(filename)s %%(output_fn)s thumbnail 0 0 2000 1500 black' % \
+    # run_distributed5('%(script_dir)s/warp_crop_IM_v2.py %(stack)s %(input_dir)s %(aligned_dir)s %%(transform)s %%(filename)s %%(output_fn)s thumbnail 0 0 2000 1500 black' % \
     #                 {'script_dir': script_dir,
     #                 'stack': stack,
     #                 'input_dir': os.path.join(data_dir, stack, stack + '_mask_unsorted/'),
