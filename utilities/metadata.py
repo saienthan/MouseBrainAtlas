@@ -43,13 +43,16 @@ if hostname.endswith('sdsc.edu'):
 elif hostname == 'yuncong-MacbookPro':
     print 'Setting environment for Local Macbook Pro'
 
+    IDENTITY_FILE = ''
+    REMOTE_HOST = 'gcn-20-31.sdsc.edu'
+    REMOTE_DATA_STORE = 'oasis-dm.sdsc.edu'
     REPO_DIR = '/home/yuncong/Brain'
 
     RAW_DATA_DIR = '/home/yuncong/CSHL_data'
-    GORDON_RAW_DATA_DIR = '/oasis/projects/nsf/csd395/yuncong/CSHL_data'
+    REMOTE_RAW_DATA_DIR = '/oasis/projects/nsf/csd395/yuncong/CSHL_data'
     data_dir = '/media/yuncong/YuncongPublic/CSHL_data_processed'
     thumbnail_data_dir = '/home/yuncong/CSHL_data_processed'
-    gordon_thumbnail_data_dir = '/oasis/projects/nsf/csd395/yuncong/CSHL_data_processed'
+    remote_thumbnail_data_dir = '/oasis/projects/nsf/csd395/yuncong/CSHL_data_processed'
 
     volume_dir = '/home/yuncong/CSHL_volumes2/'
     VOLUME_ROOTDIR = '/home/yuncong/CSHL_volumes2/'
@@ -111,17 +114,20 @@ elif hostname.startswith('ip'):
     LABELING_DIR= '/shared/CSHL_data_labelings_losslessAlignCropped'
 elif hostname.endswith('GL502VM'):
     print 'Setting environment for Local Machine Saienthan'
-    ON_AWS = False
+    ON_AWS = True
+    IDENTITY_FILE = ' -i "/home/saienthan/Downloads/KeyCompute.pem" '
+    REMOTE_DATA_STORE = 'ubuntu@ec2-52-8-75-87.us-west-1.compute.amazonaws.com'
+    REMOTE_HOST = 'ubuntu@ec2-52-8-75-87.us-west-1.compute.amazonaws.com'
     os.environ["REPO_DIR"] = '/home/saienthan/MouseBrainAtlas/'
     RAW_DATA_DIR = '/home/saienthan/data/CSHL_data/'
     data_dir = '/home/saienthan/data/CSHL_data_processed/'
     DATA_DIR = '/home/saienthan/data/CSHL_data_processed/'
     thumbnail_data_dir = data_dir
-    gordon_thumbnail_data_dir = '/oasis/projects/nsf/csd395/yuncong/CSHL_data_processed'
+    remote_thumbnail_data_dir = '/shared/data/CSHL_data_processed'
     volume_dir = '/home/saienthan/data/CSHL_volumes2/'
     annotation_rootdir = '/home/saienthan/data/CSHL_data_labelings_losslessAlignCropped/'
     ANNOTATION_ROOTDIR = '/home/saienthan/data/CSHL_data_labelings_losslessAlignCropped/'
-    GORDON_RAW_DATA_DIR = '/oasis/projects/nsf/csd395/yuncong/CSHL_data'
+    REMOTE_RAW_DATA_DIR = '/shared/data/CSHL_data'
 else:
     print 'Setting environment for Brainstem workstation'
 
