@@ -115,6 +115,13 @@ def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclu
 		    {
 		    'command': command % {'kwargs_str': json.dumps(kwargs_list_as_list[fi:li+1]).replace('"','\\"').replace("'",'\\"')}
 		    }
+    elif argument_type == 'list2':
+        # Specify {key: list}
+        for i, (fi, li) in enumerate(first_last_tuples_distribute_over(0, len(kwargs_list_as_list)-1, n_hosts)):
+            line = "%(command)s\" &" % \
+                    {
+                    'command': command % {key: json.dumps(vals[fi:li+1]).replace('"','\\"').replace("'",'\\"') for key, vals in kwargs_list_as_dict.iteritems()}
+                    }
     else:
         raise Exception('argument_type %s not recognized.' % argument_type)
     print(line)
