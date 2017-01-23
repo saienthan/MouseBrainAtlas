@@ -818,7 +818,7 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
         if ul_x == 100 and ul_y == 100 and lr_x == 200 and lr_y == 200:
             return
 
-        with open(os.path.join(thumbnail_data_dir, '%(stack)s/%(stack)s_cropbox.txt' % {'stack': self.stack}, 'w')) as f:
+        with open(os.path.join(thumbnail_data_dir, '%(stack)s/%(stack)s_cropbox.txt' % {'stack': self.stack}), 'w') as f:
             f.write('%d %d %d %d %d %d' % (ul_x, lr_x, ul_y, lr_y, self.first_section, self.last_section))
 
     def crop(self):
