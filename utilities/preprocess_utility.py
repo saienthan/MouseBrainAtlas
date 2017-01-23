@@ -86,9 +86,8 @@ def detect_responsive_nodes(exclude_nodes=[], use_nodes=None):
 
 def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclude_nodes=[], use_nodes=None, argument_type='list'):
     temp_script = '/tmp/runall.sh'
-    #n_hosts = (subprocess.check_output('qhost')).count('\n') - 3
-    n_hosts = 12
-    #3 to remove the header lines
+    n_hosts = (subprocess.check_output('qhost')).count('\n') - 3
+    #n_hosts = 12
     if isinstance(kwargs_list, dict):
         keys, vals = zip(*kwargs_list.items())
         kwargs_list_as_list = [dict(zip(keys, t)) for t in zip(*vals)]
@@ -101,35 +100,34 @@ def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclu
     if argument_type == 'single':
         for arg in kwargs_list_as_list:
             line = command % arg
-    elif argument_type == 'partition':
+    elif argument_type in ['partition', 'list', 'list2']:
         for i, (fi, li) in enumerate(first_last_tuples_distribute_over(0, len(kwargs_list_as_list)-1, n_hosts)):
-        # For cases with partition of first section / last section
-            line = "%(command)s " % \
+            if argument_type == 'partition':
+                # For cases with partition of first section / last section
+                line = "%(command)s " % \
                     {
                     'command': command % {'first_sec': kwargs_list_as_dict['sections'][fi], 'last_sec': kwargs_list_as_dict['sections'][li]}
                     }
-    elif argument_type == 'list':
-	# Specify kwargs_str
-        for i, (fi, li) in enumerate(first_last_tuples_distribute_over(0, len(kwargs_list_as_list)-1, n_hosts)):
-	    line = "%(command)s " % \
-		    {
-		    'command': command % {'kwargs_str': json.dumps(kwargs_list_as_list[fi:li+1])}
-		    }
-    elif argument_type == 'list2':
-        # Specify {key: list}
-        for i, (fi, li) in enumerate(first_last_tuples_distribute_over(0, len(kwargs_list_as_list)-1, n_hosts)):
-            line = "%(command)s\" &" % \
-                    {
-                    'command': command % {key: json.dumps(vals[fi:li+1]).replace('"','\\"').replace("'",'\\"') for key, vals in kwargs_list_as_dict.iteritems()}
-                    }
+            elif argument_type == 'list':
+            # Specify kwargs_str
+                line = "%(command)s " % \
+                {
+                'command': command % {'kwargs_str': json.dumps(kwargs_list_as_list[fi:li+1])}
+                }
+            elif argument_type == 'list2':
+            # Specify {key: list}
+                line = "%(command)s\" &" % \
+                {
+                'command': command % {key: json.dumps(vals[fi:li+1]).replace('"','\\"').replace("'",'\\"') for key, vals in kwargs_list_as_dict.iteritems()}
+                }
+            print(line)
+            temp_f = open(temp_script, 'w')
+            temp_f.write(line + '\n')
+            temp_f.close()
+            os.chmod(temp_script, 0o777)
+            call('qsub -V -l mem_free=60G ' + temp_script, shell=True, stdout=stdout)
     else:
         raise Exception('argument_type %s not recognized.' % argument_type)
-    print(line)
-    temp_f = open(temp_script, 'w')
-    temp_f.write(line + '\n')
-    temp_f.close()
-    os.chmod(temp_script, 0o777)
-    call('qsub -V -l mem_free=60G ' + temp_script, shell=True, stdout=stdout)
 
 def run_distributed4(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclude_nodes=[], use_nodes=None, argument_type='list'):
     """
