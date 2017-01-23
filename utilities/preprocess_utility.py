@@ -113,7 +113,7 @@ def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclu
         for i, (fi, li) in enumerate(first_last_tuples_distribute_over(0, len(kwargs_list_as_list)-1, n_hosts)):
 	    line = "%(command)s " % \
 		    {
-		    'command': command % {'kwargs_str': json.dumps(kwargs_list_as_list[fi:li+1]).replace('"','\\"').replace("'",'\\"')}
+		    'command': command % {'kwargs_str': json.dumps(kwargs_list_as_list[fi:li+1])}
 		    }
     elif argument_type == 'list2':
         # Specify {key: list}

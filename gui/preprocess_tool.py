@@ -1473,7 +1473,6 @@ class PreprocessGUI(QMainWindow, Ui_PreprocessGui):
 
     def align(self):
         self.web_service.convert_to_request('align', stack=self.stack, filenames=self.get_valid_sorted_filenames())
-        dc = dict(remote_data_dir=self.stack_data_dir_remote, identity_file=self.identity_file, remote_host=self.remote_host, remote_data_store=self.remote_data_store, local_data_dir=self.stack_data_dir, stack=self.stack)
 
         ## SSH speed is not stable. Performance is alternating: one 5MB/s, the next 800k/s, the next 5MB/s again.
         execute_command(('ssh %(identity_file)s %(remote_host)s \"cd %(remote_data_dir)s && tar -I pigz -cf %(stack)s_elastix_output.tar.gz %(stack)s_elastix_output/*/*.tif\" &&'
