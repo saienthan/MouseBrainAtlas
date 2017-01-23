@@ -84,7 +84,22 @@ def detect_responsive_nodes(exclude_nodes=[], use_nodes=None):
 
     return up_hostids
 
-def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclude_nodes=[], use_nodes=None, argument_type='list'):
+def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclude_nodes=[], use_nodes=None, argument_type='list', cluster_size = 1):
+
+    def set_asg_cap(asg, desired_cap):
+        num_hosts = subprocess.check_output('qhost').count('\n') - 3
+        if num_hosts < desired_cap:
+            subprocess.call("aws autoscaling set-desired-capacity --auto-scaling-group-name "+asg+" --desired-capacity "+ str(desired_cap), shell=True) 
+            print("Scaling cluster:"+asg+" Size:"+ str(desired_cap))
+            time.sleep(240)
+
+    def wait_qsub_complete():
+        op = "runall.sh"
+        while "runall.sh" in op:
+            op=subprocess.check_output('qstat')
+            time.sleep(5)
+
+    set_asg_cap(ASG_NAME, cluster_size)
     temp_script = '/tmp/runall.sh'
     n_hosts = (subprocess.check_output('qhost')).count('\n') - 3
     #n_hosts = 12
@@ -128,6 +143,7 @@ def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclu
             call('qsub -V -l mem_free=60G ' + temp_script, shell=True, stdout=stdout)
     else:
         raise Exception('argument_type %s not recognized.' % argument_type)
+    wait_qsub_complete()
 
 def run_distributed4(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclude_nodes=[], use_nodes=None, argument_type='list'):
     """
