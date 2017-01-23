@@ -144,6 +144,7 @@ class DataManager(object):
         s3_connection = boto3.resource('s3')
         if s3_path == None:
             s3_path = DataManager.map_local_filename_to_s3(local_path)
+        print(s3_path)
         bucket, file_to_download= s3_path.split("s3://")[1].split("/", 1)
         #file_to_download = file_to_download.split("/", 1)[1]
 

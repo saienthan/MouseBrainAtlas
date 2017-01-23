@@ -89,7 +89,7 @@ elif hostname.startswith('ip'):
     RAW_DATA_DIR = '/shared/data/CSHL_data'
     data_dir = '/shared/data/CSHL_data_processed'
     DATA_DIR = '/shared/data/CSHL_data_processed'
-    thumbnail_data_dir = '/home/saienthan/CSHL_data_processed'
+    thumbnail_data_dir = '/shared/data/CSHL_data_processed'
     atlasAlignParams_rootdir = '/shared/data/CSHL_atlasAlignParams_atlas_v2'
     atlasAlignOptLogs_dir = '/shared/data/CSHL_atlasAlignOptLogs_atlas_v2'
     VOLUME_ROOTDIR = '/shared/data/CSHL_volumes2'
@@ -110,6 +110,7 @@ elif hostname.startswith('ip'):
     HESSIAN_ROOTDIR = '/shared/data/CSHL_hessians/'
     os.environ["DATA_DIR"] = DATA_DIR
     os.environ["REPO_DIR"] = '/shared/MouseBrainAtlas'
+    os.environ["ELASTIX_BIN"] = '/home/ubuntu/elastix/bin/elastix'
     annotation_rootdir = '/shared/data/CSHL_data_labelings_losslessAlignCropped/'
     LABELING_DIR= '/shared/CSHL_data_labelings_losslessAlignCropped'
 elif hostname.endswith('GL502VM'):
