@@ -80,30 +80,32 @@ def compose():
 
     # no parallelism
 
-    # t = time.time()
-    # print 'composing transform...',
-    #
-    # output_fn = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_%(anchor_fn)s.pkl' % \
-    #                                                 dict(stack=stack, anchor_fn=anchor_fn))
-    #
-    # run_distributed5("%(script_dir)s/compose_transform_thumbnail_v2.py %(stack)s %(elastix_output_dir)s \'%%(kwargs_str)s\' %(anchor_idx)d %(output_fn)s" % \
-    #             {'stack': stack,
-    #             'script_dir': script_dir,
-    #             'elastix_output_dir': os.path.join(data_dir, stack, stack+'_elastix_output'),
-    #             'anchor_idx': filenames.index(anchor_fn),
-    #             'output_fn': output_fn},
-    #             kwargs_list=[{'filenames': filenames}],
-    #             use_nodes=[34],
-    #             argument_type='list')
-    #
-    # # transforms_filename = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_%(anchor_fn)s.pkl' % \
-    # # 														dict(stack=stack, anchor_fn=anchor_fn))
+    t = time.time()
+    print 'composing transform...',
+    
+    output_fn = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_%(anchor_fn)s.pkl' % \
+                                                    dict(stack=stack, anchor_fn=anchor_fn))
+   
+    run_distributed5("%(script_dir)s/compose_transform_thumbnail_v2.py %(stack)s %(elastix_output_dir)s \'%%(kwargs_str)s\' %(anchor_idx)d %(output_fn)s" % \
+                {'stack': stack,
+                'script_dir': script_dir,
+                'elastix_output_dir': os.path.join(data_dir, stack, stack+'_elastix_output'),
+                'anchor_idx': filenames.index(anchor_fn),
+                'output_fn': output_fn},
+                kwargs_list=[{'filenames': filenames}],
+                use_nodes=[34],
+                argument_type='list')
+   
+    transforms_filename = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_%(anchor_fn)s.pkl' % \
+     														dict(stack=stack, anchor_fn=anchor_fn))
+    print(transforms_filename)
     # transforms_filename = '%(stack)s_transformsTo_%(anchor_fn)s.pkl' % dict(stack=stack, anchor_fn=anchor_fn)
-    # linked_name = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_anchor.pkl' % dict(stack=stack))
-    # execute_command('rm ' + linked_name)
-    # execute_command('ln -s ' + transforms_filename + ' ' + linked_name)
-    #
-    # print 'done in', time.time() - t, 'seconds'
+    linked_name = os.path.join(elastix_output_dir, '%(stack)s_transformsTo_anchor.pkl' % dict(stack=stack))
+    print(linked_name)
+    execute_command('rm ' + linked_name)
+    execute_command('ln -s ' + transforms_filename + ' ' + linked_name)
+   
+    print 'done in', time.time() - t, 'seconds'
 
     ########################################################
 
@@ -254,6 +256,7 @@ def crop():
                         exclude_nodes=exclude_nodes + [32],
                         argument_type='list2')
     else:
+        print(os.path.join(data_dir, stack,stack + '_lossless_unsorted_alignedTo_' + anchor_fn + '_cropped_saturation'))
         run_distributed5('%(script_dir)s/generate_other_versions_v2.py %(stack)s %(input_dir)s \'%%(input_filenames)s\' --output_compressed_dir %(compressed_dir)s --output_saturation_dir %(saturation_dir)s' % \
                         dict(script_dir=script_dir,
                         stack=stack,

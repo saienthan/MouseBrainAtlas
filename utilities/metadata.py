@@ -76,6 +76,7 @@ elif hostname == 'yuncong-Precision-WorkStation-T7500':
 elif hostname.startswith('ip'):
     print 'Setting environment for AWS compute node'
     ON_AWS = True
+    ASG_NAME = 'cfncluster-mbacluster-ComputeFleet-MSG4A54YHGPC'
     s3_home = 'ucsd-mousebrainatlas-home'
 #    VOLUME_ROOTDIR = '/home/ubuntu/data/CSHL_volumes2'
 #    SVM_ROOTDIR = '/home/ubuntu/data/CSHL_patch_features_Sat16ClassFinetuned_v2_classifiers/'
