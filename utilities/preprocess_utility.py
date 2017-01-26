@@ -1,6 +1,7 @@
 from subprocess import call
 from metadata import *
 import subprocess
+import time
 import boto3
 import os
 import sys
@@ -133,7 +134,7 @@ def run_distributed5(command, kwargs_list, stdout=open('/tmp/log', 'ab+'), exclu
             # Specify {key: list}
                 line = "%(command)s\" &" % \
                 {
-                'command': command % {key: json.dumps(vals[fi:li+1]).replace('"','\\"').replace("'",'\\"') for key, vals in kwargs_list_as_dict.iteritems()}
+                'command': command % {key: json.dumps(vals[fi:li+1]) for key, vals in kwargs_list_as_dict.iteritems()}
                 }
             print(line)
             temp_f = open(temp_script, 'w')
