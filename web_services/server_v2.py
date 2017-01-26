@@ -116,6 +116,18 @@ def compose():
     														dict(stack=stack, anchor_fn=anchor_fn))
     transforms_to_anchor = pickle.load(open(transforms_filename, 'r'))
 
+    print('%(script_dir)s/warp_crop_IM_v2.py %(stack)s %(input_dir)s %(aligned_dir)s %%(transform)s %%(filename)s %%(output_fn)s thumbnail 0 0 2000 1500 %(pad_bg_color)s' % \
+                    {'script_dir': script_dir,
+                    'stack': stack,
+                    'input_dir': RAW_DATA_DIR + stack,
+                    'aligned_dir': os.path.join(data_dir, stack, stack + '_thumbnail_unsorted_alignedTo_' + anchor_fn),
+                    'pad_bg_color': pad_bg_color},
+                    kwargs_list=[{'transform': ','.join(map(str, transforms_to_anchor[fn].flatten())),
+                                'filename': fn + '.' + tb_fmt,
+                                'output_fn': fn + '_thumbnail_alignedTo_' + anchor_fn + '.tif'}
+                                for fn in filenames],
+                    exclude_nodes=exclude_nodes + [32],
+                    argument_type='single')
     run_distributed5('%(script_dir)s/warp_crop_IM_v2.py %(stack)s %(input_dir)s %(aligned_dir)s %%(transform)s %%(filename)s %%(output_fn)s thumbnail 0 0 2000 1500 %(pad_bg_color)s' % \
                     {'script_dir': script_dir,
                     'stack': stack,
