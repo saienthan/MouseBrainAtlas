@@ -158,68 +158,70 @@ def crop():
 
     ##################################################
 
-    # t = time.time()
-    # sys.stderr.write('cropping thumbnail...')
-    #
-    # os.system(('mkdir %(stack_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped; '
-    #             'mogrify -set filename:name %%t -crop %(w)dx%(h)d+%(x)d+%(y)d -write "%(stack_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped/%%[filename:name]_cropped.tif" %(stack_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s/*.tif') % \
-    # 	{'stack': stack,
-    # 	'stack_data_dir': os.path.join(data_dir, stack),
-    # 	'w':w, 'h':h, 'x':x, 'y':y,
-    #     'anchor_fn': anchor_fn})
-    #
-    # sys.stderr.write('done in %f seconds\n' % (time.time() - t))
+    t = time.time()
+    sys.stderr.write('cropping thumbnail...')
 
-    # #################################################
+    print(os.path.join(data_dir, stack))
+   
+    os.system(('mkdir %(stack_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped; '
+                'mogrify -set filename:name %%t -crop %(w)dx%(h)d+%(x)d+%(y)d -write "%(stack_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s_cropped/%%[filename:name]_cropped.tif" %(stack_data_dir)s/%(stack)s_thumbnail_unsorted_alignedTo_%(anchor_fn)s/*.tif') % \
+    	{'stack': stack,
+    	'stack_data_dir': os.path.join(data_dir, stack),
+    	'w':w, 'h':h, 'x':x, 'y':y,
+        'anchor_fn': anchor_fn})
+   
+    sys.stderr.write('done in %f seconds\n' % (time.time() - t))
 
-    # t = time.time()
-    # sys.stderr.write('expanding...')
-    #
-    # expanded_tif_dir = create_if_not_exists(os.environ['DATA_DIR'] + '/' + stack + '/' + stack + '_lossless_tif')
-    # # jp2_dir = os.environ['DATA_DIR'] + '/' + stack + '_lossless_renamed_jp2'
-    #
-    # filenames_to_expand = [fn for fn in filenames[first_idx:last_idx+1] if not os.path.exists(expanded_tif_dir + '/' + fn + '_lossless.tif')]
-    # sys.stderr.write('filenames_to_expand: %s' % filenames_to_expand)
-    #
-    # run_distributed5('kdu_expand_patched -i %(jp2_dir)s/%%(fn)s_lossless.jp2 -o %(expanded_tif_dir)s/%%(fn)s_lossless.tif' % \
-    #                 {'jp2_dir': '/home/yuncong/CSHL_data/' + stack,
-    #                 # 'stack': stack,
-    #                 'expanded_tif_dir': expanded_tif_dir},
-    #                 kwargs_list={'fn': filenames_to_expand},
-    #                 exclude_nodes=exclude_nodes,
-    #                 argument_type='single')
-    #
-    # sys.stderr.write('done in %f seconds\n' % (time.time() - t))
+    #################################################
 
-    # #################################################
+    t = time.time()
+    sys.stderr.write('expanding...')
+   
+    expanded_tif_dir = create_if_not_exists(os.environ['DATA_DIR'] + '/' + stack + '/' + stack + '_lossless_tif')
+    jp2_dir = os.environ['DATA_DIR'] + '/' + stack + '_lossless_renamed_jp2'
+   
+    filenames_to_expand = [fn for fn in filenames[first_idx:last_idx+1] if not os.path.exists(expanded_tif_dir + '/' + fn + '_lossless.tif')]
+    sys.stderr.write('filenames_to_expand: %s' % filenames_to_expand)
+   
+    run_distributed5('kdu_expand_patched -i %(jp2_dir)s/%%(fn)s_lossless.jp2 -o %(expanded_tif_dir)s/%%(fn)s_lossless.tif' % \
+                    {'jp2_dir': '/home/saienthan/data/CSHL_data/' + stack,
+                     'stack': stack,
+                     'expanded_tif_dir': expanded_tif_dir},
+                     kwargs_list={'fn': filenames_to_expand},
+                     exclude_nodes=exclude_nodes,
+                     argument_type='single')
+     
+    sys.stderr.write('done in %f seconds\n' % (time.time() - t))
 
-    # t = time.time()
-    # sys.stderr.write('warping and cropping lossless...')
-    #
-    # elastix_output_dir = os.path.join(data_dir, stack, stack+'_elastix_output')
-    # transforms_to_anchor = pickle.load(open(elastix_output_dir + '/%(stack)s_transformsTo_anchor.pkl' % {'stack':stack}, 'r'))
-    # # Note that the index from trasform pickle file starts at 0, BUT the .._renamed folder index starts at 1.#
-    #
-    # # print transforms_to_anchor.keys()
-    #
-    # run_distributed5(command='%(script_path)s %(stack)s %(lossless_tif_dir)s %(lossless_aligned_cropped_dir)s %%(transform)s %%(filename)s %%(output_fn)s lossless %(x)d %(y)d %(w)d %(h)d %(pad_bg_color)s'%\
-    #                 {'script_path': script_dir + '/warp_crop_IM_v2.py',
-    #                 'stack': stack,
-    #                 'lossless_tif_dir': os.path.join(os.environ['DATA_DIR'] , stack, stack + '_lossless_tif'),
-    #                 'lossless_aligned_cropped_dir': os.path.join( os.environ['DATA_DIR'], stack, stack + '_lossless_unsorted_alignedTo_' + anchor_fn + '_cropped'),
-    #                 'x': x,
-    #                 'y': y,
-    #                 'w': w,
-    #                 'h': h,
-    #                 'pad_bg_color': pad_bg_color},
-    #                 kwargs_list=[{'transform': ','.join(map(str, transforms_to_anchor[fn].flatten())),
-    #                             'filename': fn + '_lossless.tif',
-    #                             'output_fn': fn + '_lossless_alignedTo_' + anchor_fn + '_cropped.tif'}
-    #                             for fn in filenames[first_idx:last_idx+1]],
-    #                 exclude_nodes=exclude_nodes + [32], # "convert" command is especially slow on gcn-20-32 for some reason.
-    #                 argument_type='single')
-    #
-    # sys.stderr.write('done in %f seconds\n' % (time.time() - t))
+    #################################################
+
+    t = time.time()
+    sys.stderr.write('warping and cropping lossless...')
+   
+    elastix_output_dir = os.path.join(data_dir, stack, stack+'_elastix_output')
+    transforms_to_anchor = pickle.load(open(elastix_output_dir + '/%(stack)s_transformsTo_anchor.pkl' % {'stack':stack}, 'r'))
+    # Note that the index from trasform pickle file starts at 0, BUT the .._renamed folder index starts at 1.#
+  
+    # print transforms_to_anchor.keys()
+   
+    run_distributed5(command='%(script_path)s %(stack)s %(lossless_tif_dir)s %(lossless_aligned_cropped_dir)s %%(transform)s %%(filename)s %%(output_fn)s lossless %(x)d %(y)d %(w)d %(h)d %(pad_bg_color)s'%\
+                    {'script_path': script_dir + '/warp_crop_IM_v2.py',
+                     'stack': stack,
+                     'lossless_tif_dir': os.path.join(os.environ['DATA_DIR'] , stack, stack + '_lossless_tif'),
+                     'lossless_aligned_cropped_dir': os.path.join( os.environ['DATA_DIR'], stack, stack + '_lossless_unsorted_alignedTo_' + anchor_fn + '_cropped'),
+                     'x': x,
+                     'y': y,
+                     'w': w,
+                     'h': h,
+                     'pad_bg_color': pad_bg_color},
+                     kwargs_list=[{'transform': ','.join(map(str, transforms_to_anchor[fn].flatten())),
+                                 'filename': fn + '_lossless.tif',
+                                 'output_fn': fn + '_lossless_alignedTo_' + anchor_fn + '_cropped.tif'}
+                                 for fn in filenames[first_idx:last_idx+1]],
+                     exclude_nodes=exclude_nodes + [32], # "convert" command is especially slow on gcn-20-32 for some reason.
+                     argument_type='single')
+    
+    sys.stderr.write('done in %f seconds\n' % (time.time() - t))
 
     #########################################
 
@@ -442,8 +444,8 @@ def generate_masks():
     #     t = time.time()
     #     print 'Regularize colorspace for neurotrace images...',
     #
-    #     input_dir = '/home/yuncong/CSHL_data/%(stack)s' % dict(stack=stack)
-    #     output_dir = create_if_not_exists('/home/yuncong/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack))
+    #     input_dir = '/home/saienthan/data/CSHL_data/%(stack)s' % dict(stack=stack)
+    #     output_dir = create_if_not_exists('/home/saienthan/data/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack))
     #
     #     run_distributed5(command='%(script_path)s %(input_dir)s %(output_dir)s %%(filename)s' % \
     #                     {'script_path': os.path.join(os.environ['REPO_DIR'], 'preprocess') + '/neurotrace_blue_to_nissl.py',
@@ -462,16 +464,16 @@ def generate_masks():
     # t = time.time()
     # print 'Generating thumbnail mask...',
     #
-    # output_dir = create_if_not_exists('/home/yuncong/CSHL_data_processed/%(stack)s/%(stack)s_mask_unsorted' % dict(stack=stack))
+    # output_dir = create_if_not_exists('/home/saienthan/data/CSHL_data_processed/%(stack)s/%(stack)s_mask_unsorted' % dict(stack=stack))
     #
     # if stack in ['MD635']:
     #     # Fluor
-    #     input_dir = '/home/yuncong/CSHL_data/%(stack)s' % dict(stack=stack)
-    #     # input_dir = '/home/yuncong/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack)
+    #     input_dir = '/home/saienthan/data/CSHL_data/%(stack)s' % dict(stack=stack)
+    #     # input_dir = '/home/saienthan/data/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack)
     #     script_name = 'generate_thumbnail_masks_v3.py'
     # else:
     #     # Nissl
-    #     input_dir = '/home/yuncong/CSHL_data/%(stack)s' % dict(stack=stack)
+    #     input_dir = '/home/saienthan/data/CSHL_data/%(stack)s' % dict(stack=stack)
     #     script_name = 'generate_thumbnail_masks_v2.py'
     #
     # # !! For some reason (perhaps too much simultaneous write to disk), the distributed computation cannot finish, usually stuck with only a few sections left.
@@ -493,7 +495,7 @@ def generate_masks():
     print 'Generating visualization of mask contours overlayed on thumbnail images ...',
 
     image_dir = '%(raw_data_dir)s/%(stack)s' % dict(stack=stack, raw_data_dir=RAW_DATA_DIR)
-    # image_dir = '/home/yuncong/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack)
+    # image_dir = '/home/saienthan/data/CSHL_data_processed/%(stack)s/%(stack)s_brightfieldized' % dict(stack=stack)
     mask_dir = '%(data_dir)s/%(stack)s/%(stack)s_mask_unsorted' % dict(stack=stack, data_dir=DATA_DIR)
     output_dir = create_if_not_exists('%(data_dir)s/%(stack)s/%(stack)s_maskContourViz_unsorted' % dict(stack=stack, data_dir=DATA_DIR))
 
